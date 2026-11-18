@@ -47,7 +47,7 @@ Tenant: NexusPay
 ## 6. Airport Transfers, Outstation & Personal Travel Exclusions
 6.1 **Airport Transfers**: Daily employee commute facilities operate strictly between residential clusters and designated office campuses. Airport pickup, airport drop-offs, and railway station transits are not covered under the employee daily commute policy.
 6.2 **Corporate Business Travel**: Employees traveling for official business client meetings, flights, or outstation conferences must arrange travel via the Corporate Travel Desk under the Global Travel Expense Policy, not the daily commute platform.
-6.3 **Personal Luggage & Guest Policy**: Commute cabs are communal vehicles. Carrying commercial cargo, pets, oversized household baggage, or unauthorized external guests/family members is strictly prohibited.
+6.3 **Personal Luggage & Cargo Policy**: Commute cabs are communal passenger vehicles. Carrying commercial cargo, hazardous materials, oversized household furniture, or unauthorized external guests is strictly prohibited.
 
 ## 7. Transport Operations Desk, Helpline & Emergency SOS
 7.1 **24/7 Transport Helpdesk**: For real-time cab tracking, delays exceeding 15 minutes, driver grievances, or lost-and-found items:
