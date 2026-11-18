@@ -134,7 +134,8 @@ async def ask_question(
     return await commute_service.answer_question(
         question=req.question,
         user=user,
-        mode=req.mode
+        mode=req.mode,
+        provider=req.provider
     )
 
 @app.get("/api/health", tags=["System"])

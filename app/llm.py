@@ -239,6 +239,39 @@ Employee Question: {query}
 
 Remember to cite [Document: ..., Section: ...] for any factual assertion, or say the policy does not cover this topic."""
 
+        # Live Groq execution (Ultra-low latency LPU engine: ~400-600ms)
+        if self.provider == "groq" and settings.GROQ_API_KEY:
+            import httpx
+            model_name = settings.GROQ_MODEL
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {settings.GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": model_name,
+                "messages": [
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": user_prompt}
+                ],
+                "temperature": 0.0,
+                "max_tokens": 300
+            }
+            try:
+                http_timeout = max(1.5, settings.LLM_TIMEOUT_SECONDS - 0.2)
+                resp = httpx.post(url, headers=headers, json=payload, timeout=http_timeout)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    answer = data["choices"][0]["message"]["content"].strip()
+                    if "does not cover" in answer.lower():
+                        return answer, [], 1
+                    citations = extract_citations_from_chunks(chunks)
+                    return answer, citations, 1
+                else:
+                    print(f"[WARN] Groq model {model_name} returned HTTP {resp.status_code}: {resp.text[:120]}")
+            except Exception as e:
+                print(f"[WARN] Groq call to {model_name} failed ({e}). Falling back to grounded local response.")
+
         # Live Gemini execution
         if self.provider == "gemini" and settings.GEMINI_API_KEY:
             import httpx
@@ -269,7 +302,17 @@ Remember to cite [Document: ..., Section: ...] for any factual assertion, or say
         return FakeLLM().generate(query, company_id, chunks)
 
 
-def get_llm():
-    if settings.LLM_PROVIDER in ["gemini", "groq"] and (settings.GEMINI_API_KEY or settings.GROQ_API_KEY):
-        return RealLLM(provider=settings.LLM_PROVIDER)
+def get_llm(provider: Optional[str] = None):
+    prov = (provider or settings.LLM_PROVIDER).lower()
+    if prov == "groq" and settings.GROQ_API_KEY:
+        return RealLLM(provider="groq")
+    elif prov == "gemini" and settings.GEMINI_API_KEY:
+        return RealLLM(provider="gemini")
+    elif prov in ["fake", "mock"]:
+        return FakeLLM()
+    # If explicitly requested provider had no key, fallback to available key
+    if settings.GROQ_API_KEY:
+        return RealLLM(provider="groq")
+    if settings.GEMINI_API_KEY:
+        return RealLLM(provider="gemini")
     return FakeLLM()

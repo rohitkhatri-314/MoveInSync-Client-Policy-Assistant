@@ -21,7 +21,8 @@ class CommuteService:
         self,
         question: str,
         user: UserClaims,
-        mode: Optional[str] = None
+        mode: Optional[str] = None,
+        provider: Optional[str] = None
     ) -> AskResponse:
         """
         Executes tenant-isolated query resolution under strict SLA and call limits.
@@ -29,14 +30,17 @@ class CommuteService:
         - Enforces max 3 cited chunks.
         - Enforces <= 2 LLM calls (1 on standard path, 0 on silence early-exit).
         - Enforces < 3.0s p95 latency.
+        - Dynamically routes to requested LLM provider (Groq, Gemini, or FakeLLM).
         """
         start_time = time.perf_counter()
         company_id = user.company_id
         contact = CONTACT_DESKS.get(company_id, f"desk@{company_id.lower()}.com")
         retrieval_mode = mode or settings.DEFAULT_RETRIEVAL_MODE
+        active_provider = (provider or settings.LLM_PROVIDER).lower()
+        llm_instance = get_llm(provider) if provider else self.llm
 
         # 0. Check Query Cache (Instant sub-millisecond response on repeated questions)
-        cached_resp = query_cache.get(company_id=company_id, query=question, mode=retrieval_mode)
+        cached_resp = query_cache.get(company_id=company_id, query=question, mode=retrieval_mode, provider=active_provider)
         if cached_resp:
             return cached_resp
 
@@ -52,6 +56,7 @@ class CommuteService:
                 llm_calls=0,
                 chunks_retrieved=0,
                 retrieval_mode=retrieval_mode,
+                llm_provider=active_provider,
                 status="success"
             )
         elif norm_clean in THANKS:
@@ -64,6 +69,7 @@ class CommuteService:
                 llm_calls=0,
                 chunks_retrieved=0,
                 retrieval_mode=retrieval_mode,
+                llm_provider=active_provider,
                 status="success"
             )
         elif norm_clean in CLOSINGS:
@@ -76,6 +82,7 @@ class CommuteService:
                 llm_calls=0,
                 chunks_retrieved=0,
                 retrieval_mode=retrieval_mode,
+                llm_provider=active_provider,
                 status="success"
             )
 
@@ -102,15 +109,17 @@ class CommuteService:
                 llm_calls=0,
                 chunks_retrieved=0,
                 retrieval_mode=retrieval_mode,
+                llm_provider=active_provider,
                 status="silent_fallback"
             )
 
-        # 3. Grounded LLM Generation with SLA Circuit-Breaker
+        # 4. Grounded LLM Generation with SLA Circuit-Breaker
         try:
-            # Wrap in async timeout guard
+            # Dynamic timeout budget depending on provider
+            budget = 3.5 if provider == "groq" else (12.0 if provider == "gemini" else settings.LLM_TIMEOUT_SECONDS)
             answer, raw_citations, call_count = await asyncio.wait_for(
-                asyncio.to_thread(self.llm.generate, question, company_id, chunks),
-                timeout=settings.LLM_TIMEOUT_SECONDS
+                asyncio.to_thread(llm_instance.generate, question, company_id, chunks),
+                timeout=budget
             )
 
             citations = [
@@ -133,10 +142,11 @@ class CommuteService:
                 llm_calls=call_count,
                 chunks_retrieved=len(chunks),
                 retrieval_mode=retrieval_mode,
+                llm_provider=active_provider,
                 status=status_val
             )
             # Store in query cache for instant sub-millisecond retrieval on repeat
-            query_cache.set(company_id=company_id, query=question, mode=retrieval_mode, response=final_response)
+            query_cache.set(company_id=company_id, query=question, mode=retrieval_mode, response=final_response, provider=active_provider)
             return final_response
 
         except asyncio.TimeoutError:

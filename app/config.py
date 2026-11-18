@@ -21,12 +21,13 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
     DEFAULT_RETRIEVAL_MODE: str = os.getenv("DEFAULT_RETRIEVAL_MODE", "hybrid")  # 'dense' or 'hybrid'
     
     # Constraints
     MAX_CITED_CHUNKS: int = 3
     MAX_LLM_CALLS_PER_QUERY: int = 2
-    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "12.0" if os.getenv("LLM_PROVIDER") == "gemini" else "2.5"))
+    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "3.0" if os.getenv("LLM_PROVIDER") == "groq" else ("12.0" if os.getenv("LLM_PROVIDER") == "gemini" else "2.5")))
     RELEVANCE_THRESHOLD: float = 0.01  # Hybrid RRF score threshold for out-of-scope silence (RRF max is ~0.033)
     
     class Config:

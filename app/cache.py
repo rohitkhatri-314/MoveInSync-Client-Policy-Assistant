@@ -24,8 +24,9 @@ class QueryCache:
             self._cache[company_id] = {}
         return self._cache[company_id]
 
-    def get(self, company_id: str, query: str, mode: str) -> Optional[AskResponse]:
-        norm = f"{mode}::{normalize_query(query)}"
+    def get(self, company_id: str, query: str, mode: str, provider: Optional[str] = None) -> Optional[AskResponse]:
+        prov = provider or "default"
+        norm = f"{mode}::{prov}::{normalize_query(query)}"
         tenant_store = self._cache.get(company_id, {})
         entry = tenant_store.get(norm)
         if not entry:
@@ -46,15 +47,17 @@ class QueryCache:
             llm_calls=0,      # 0 LLM calls burned!
             chunks_retrieved=cached_resp.chunks_retrieved,
             retrieval_mode=cached_resp.retrieval_mode,
+            llm_provider=cached_resp.llm_provider,
             status=f"{cached_resp.status} (cached)"
         )
 
-    def set(self, company_id: str, query: str, mode: str, response: AskResponse):
+    def set(self, company_id: str, query: str, mode: str, response: AskResponse, provider: Optional[str] = None):
         # Do not cache error responses or temporary timeouts
         if response.status in ["timeout_fallback", "error_fallback"]:
             return
 
-        norm = f"{mode}::{normalize_query(query)}"
+        prov = provider or "default"
+        norm = f"{mode}::{prov}::{normalize_query(query)}"
         tenant_store = self._get_tenant_store(company_id)
 
         # Evict oldest if capacity exceeded

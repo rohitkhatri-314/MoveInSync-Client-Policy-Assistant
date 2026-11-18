@@ -21,6 +21,7 @@ class UserClaims(BaseModel):
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=2, max_length=1000, description="Employee commute question")
     mode: Optional[str] = Field(default=None, description="Retrieval mode: 'dense' or 'hybrid' (defaults to system config)")
+    provider: Optional[str] = Field(default=None, description="LLM provider: 'groq', 'gemini', or 'fake' (defaults to system config)")
 
 class Citation(BaseModel):
     document: str = Field(..., description="Source policy document ID or name")
@@ -35,6 +36,7 @@ class AskResponse(BaseModel):
     llm_calls: int
     chunks_retrieved: int
     retrieval_mode: str
+    llm_provider: Optional[str] = None
     status: str  # 'success', 'silent_fallback', 'timeout_fallback', 'error_fallback'
 
 class IngestRequest(BaseModel):

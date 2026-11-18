@@ -60,7 +60,7 @@
     }
     .top-controls {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
       margin-bottom: 20px;
     }
@@ -276,13 +276,26 @@
 
       <!-- Retrieval Mode (Bonus Feature) -->
       <div class="card">
-        <label>2. Retrieval Engine (Bonus Improvement)</label>
+        <label>2. Retrieval Engine (Bonus)</label>
         <div class="mode-toggle">
-          <button type="button" class="mode-btn active" id="btnHybrid" onclick="setMode('hybrid')">Hybrid (Dense + BM25 RRF)</button>
-          <button type="button" class="mode-btn" id="btnDense" onclick="setMode('dense')">Baseline Dense Only</button>
+          <button type="button" class="mode-btn active" id="btnHybrid" onclick="setMode('hybrid')">Hybrid (RRF)</button>
+          <button type="button" class="mode-btn" id="btnDense" onclick="setMode('dense')">Dense</button>
         </div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
-          RRF balances semantic search with exact time/cutoff keyword matching.
+          Dense + BM25 RRF fusion.
+        </div>
+      </div>
+
+      <!-- LLM Engine Selector -->
+      <div class="card">
+        <label>3. Live LLM Engine</label>
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn active" id="btnGroq" onclick="setProvider('groq')">⚡ Groq (~600ms)</button>
+          <button type="button" class="mode-btn" id="btnGemini" onclick="setProvider('gemini')">🤖 Gemini</button>
+          <button type="button" class="mode-btn" id="btnFake" onclick="setProvider('fake')">🧪 Mock</button>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="providerNote">
+          Groq LPU (Qwen 3.8 27B) delivers ultra-low latency &lt; 1.0s.
         </div>
       </div>
     </div>
@@ -313,7 +326,8 @@
     <div class="result-card" id="resultCard">
       <div class="metrics-bar">
         <div class="metric-pill green" id="latencyPill">⚡ Latency: 0 ms</div>
-        <div class="metric-pill" id="callsPill">🤖 LLM Calls: 1</div>
+        <div class="metric-pill" id="providerPill" style="border-color: #8b5cf6; color: #c4b5fd;">🤖 Engine: GROQ</div>
+        <div class="metric-pill" id="callsPill">🤖 Calls: 1</div>
         <div class="metric-pill" id="chunksPill">📄 Chunks: 0</div>
         <div class="metric-pill" id="statusPill">Status: success</div>
       </div>
@@ -340,6 +354,18 @@
     let currentToken = "";
     let currentCompany = "NexusPay";
     let currentMode = "hybrid";
+    let currentProvider = "groq";
+
+    function setProvider(prov) {
+      currentProvider = prov;
+      document.getElementById("btnGroq").classList.toggle("active", prov === "groq");
+      document.getElementById("btnGemini").classList.toggle("active", prov === "gemini");
+      document.getElementById("btnFake").classList.toggle("active", prov === "fake");
+      const note = document.getElementById("providerNote");
+      if (prov === "groq") note.innerText = "Groq LPU (Qwen 3.8 27B) delivers ultra-low latency < 1.0s.";
+      else if (prov === "gemini") note.innerText = "Google Gemini 3.5 Flash Lite over public cloud API (~3-6s).";
+      else note.innerText = "Deterministic local mock for offline testing & grading (<200ms).";
+    }
 
     async function fetchToken(company) {
       currentCompany = company;
@@ -389,7 +415,7 @@
             "Content-Type": "application/json",
             "Authorization": `Bearer ${currentToken}`
           },
-          body: JSON.stringify({ question: question, mode: currentMode })
+          body: JSON.stringify({ question: question, mode: currentMode, provider: currentProvider })
         });
 
         const data = await res.json();
@@ -402,7 +428,9 @@
         latPill.innerText = `⚡ Latency: ${data.latency_ms} ms`;
         latPill.className = data.latency_ms < 3000 ? "metric-pill green" : "metric-pill yellow";
 
-        document.getElementById("callsPill").innerText = `🤖 LLM Calls: ${data.llm_calls}`;
+        const provName = data.llm_provider || currentProvider;
+        document.getElementById("providerPill").innerText = `🤖 Engine: ${provName.toUpperCase()}`;
+        document.getElementById("callsPill").innerText = `🤖 Calls: ${data.llm_calls}`;
         document.getElementById("chunksPill").innerText = `📄 Chunks: ${data.chunks_retrieved}`;
         
         const statusPill = document.getElementById("statusPill");
