@@ -6,15 +6,13 @@ services:
     container_name: moveinsync-commute-assistant
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - APP_ENV=production
-      - LLM_PROVIDER=fake
       - JWT_SECRET=moveinsync-campus-case-study-b-secure-jwt-key-2026
       - DEFAULT_RETRIEVAL_MODE=hybrid
       - CHROMA_PERSIST_DIR=/app/data/chroma_db
-      # To enable real Gemini or Groq LLM during demo, provide your API key below:
-      # - GEMINI_API_KEY=your_gemini_api_key_here
-      # - LLM_PROVIDER=gemini
     volumes:
       - ./data:/app/data
     restart: unless-stopped
