@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.auth import create_access_token, get_current_tenant
+from app.cache import query_cache
 from app.config import settings
 from app.ingestion import IngestionEngine
 from app.models import (
@@ -100,9 +101,10 @@ async def ingest_policy(req: IngestRequest):
         
     try:
         res = ingestion_engine.ingest_policy_file(req.file_path, req.company_id, req.version)
-        # Refresh BM25 sparse index after new ingestion
+        # Refresh BM25 sparse index and invalidate query cache after new ingestion
         if policy_retriever:
             policy_retriever.refresh_bm25_indices()
+        query_cache.invalidate_tenant(req.company_id)
         return IngestResponse(
             company_id=res["company_id"],
             document_id=res["document_id"],

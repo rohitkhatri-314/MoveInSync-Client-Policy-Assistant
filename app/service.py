@@ -1,10 +1,16 @@
 import asyncio
+import re
 import time
 from typing import Optional
+from app.cache import query_cache
 from app.config import settings
 from app.llm import CONTACT_DESKS, get_llm
 from app.models import AskResponse, Citation, UserClaims
 from app.retriever import PolicyRetriever
+
+GREETINGS = {"hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings"}
+THANKS = {"thank you", "thanks", "thx", "thank you so much", "thanks a lot", "appreciate it"}
+CLOSINGS = {"bye", "goodbye", "see you", "cya"}
 
 class CommuteService:
     def __init__(self, retriever: Optional[PolicyRetriever] = None):
@@ -29,7 +35,51 @@ class CommuteService:
         contact = CONTACT_DESKS.get(company_id, f"desk@{company_id.lower()}.com")
         retrieval_mode = mode or settings.DEFAULT_RETRIEVAL_MODE
 
-        # 1. Multi-Tenant Retrieval (server-enforced company_id)
+        # 0. Check Query Cache (Instant sub-millisecond response on repeated questions)
+        cached_resp = query_cache.get(company_id=company_id, query=question, mode=retrieval_mode)
+        if cached_resp:
+            return cached_resp
+
+        # 1. Conversational Pleasantries Handling (Greetings & Thanks)
+        norm_clean = re.sub(r"[^\w\s]", "", question.strip().lower()).strip()
+        if norm_clean in GREETINGS:
+            elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            return AskResponse(
+                answer=f"Hello! I am your MoveInSync Commute Policy Assistant for {company_id}. How can I assist you with your commute, shift cutoffs, night escort rules, or cab allocations today?",
+                citations=[],
+                company_id=company_id,
+                latency_ms=elapsed_ms,
+                llm_calls=0,
+                chunks_retrieved=0,
+                retrieval_mode=retrieval_mode,
+                status="success"
+            )
+        elif norm_clean in THANKS:
+            elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            return AskResponse(
+                answer="You're very welcome! Feel free to ask if you have any more questions about your corporate commute policy. Have a safe journey!",
+                citations=[],
+                company_id=company_id,
+                latency_ms=elapsed_ms,
+                llm_calls=0,
+                chunks_retrieved=0,
+                retrieval_mode=retrieval_mode,
+                status="success"
+            )
+        elif norm_clean in CLOSINGS:
+            elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            return AskResponse(
+                answer="Goodbye! Have a safe and pleasant commute.",
+                citations=[],
+                company_id=company_id,
+                latency_ms=elapsed_ms,
+                llm_calls=0,
+                chunks_retrieved=0,
+                retrieval_mode=retrieval_mode,
+                status="success"
+            )
+
+        # 2. Multi-Tenant Retrieval (server-enforced company_id)
         chunks = self.retriever.retrieve(
             query=question,
             company_id=company_id,
@@ -88,7 +138,7 @@ class CommuteService:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             status_val = "silent_fallback" if "does not cover" in answer.lower() else "success"
 
-            return AskResponse(
+            final_response = AskResponse(
                 answer=answer,
                 citations=citations,
                 company_id=company_id,
@@ -98,6 +148,9 @@ class CommuteService:
                 retrieval_mode=retrieval_mode,
                 status=status_val
             )
+            # Store in query cache for instant sub-millisecond retrieval on repeat
+            query_cache.set(company_id=company_id, query=question, mode=retrieval_mode, response=final_response)
+            return final_response
 
         except asyncio.TimeoutError:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
