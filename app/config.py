@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Constraints
     MAX_CITED_CHUNKS: int = 3
     MAX_LLM_CALLS_PER_QUERY: int = 2
-    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "5.0" if os.getenv("LLM_PROVIDER") == "gemini" else "2.5"))
+    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "12.0" if os.getenv("LLM_PROVIDER") == "gemini" else "2.5"))
     RELEVANCE_THRESHOLD: float = 0.01  # Hybrid RRF score threshold for out-of-scope silence (RRF max is ~0.033)
     
     class Config:

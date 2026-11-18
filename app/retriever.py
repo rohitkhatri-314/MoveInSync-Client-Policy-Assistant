@@ -5,9 +5,32 @@ from rank_bm25 import BM25Okapi
 
 from app.config import settings
 
+STOP_WORDS = {
+    "a", "an", "the", "and", "or", "in", "on", "at", "to", "for", "of", "with",
+    "by", "from", "as", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "can", "could", "will", "would",
+    "shall", "should", "may", "might", "must", "i", "you", "he", "she", "it",
+    "we", "they", "my", "your", "his", "her", "its", "our", "their", "me", "him",
+    "them", "this", "that", "these", "those", "am"
+}
+
+def stem_token(word: str) -> str:
+    """Lightweight English morphological normalizer for BM25."""
+    if len(word) > 4 and word.endswith("ies"):
+        return word[:-3] + "y"
+    if len(word) > 3 and word.endswith("es"):
+        return word[:-2]
+    if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    if len(word) > 5 and word.endswith("ing"):
+        return word[:-3]
+    return word
+
 def tokenize(text: str) -> List[str]:
-    """Lightweight regex word tokenizer for BM25."""
-    return re.findall(r"\w+", text.lower())
+    """Lightweight regex word tokenizer with stop word removal and morphological normalization for BM25."""
+    words = re.findall(r"\w+", text.lower())
+    cleaned = [stem_token(w) for w in words if w not in STOP_WORDS]
+    return cleaned if cleaned else words
 
 class PolicyRetriever:
     def __init__(self, chroma_client: Optional[chromadb.ClientAPI] = None):

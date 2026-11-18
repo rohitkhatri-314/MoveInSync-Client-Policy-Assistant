@@ -87,21 +87,8 @@ class CommuteService:
             mode=retrieval_mode
         )
 
-        # 2. Early-Exit Silence Detection (Zero-LLM optimization)
-        # If no chunks found or top chunk has negligible relevance score
-        is_silent = False
+        # 3. Silence Detection: Early-exit only if zero chunks could be retrieved
         if not chunks:
-            is_silent = True
-        elif retrieval_mode == "hybrid":
-            top_score = chunks[0].get("rrf_score", 0.0)
-            if top_score < settings.RELEVANCE_THRESHOLD:
-                is_silent = True
-        elif retrieval_mode == "dense":
-            top_score = chunks[0].get("dense_score", 0.0)
-            if top_score < 0.20:
-                is_silent = True
-
-        if is_silent:
             elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
             silence_text = (
                 f"The commute policy for {company_id} does not cover this topic. "
