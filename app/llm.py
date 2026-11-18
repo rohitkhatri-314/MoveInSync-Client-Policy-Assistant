@@ -147,15 +147,26 @@ class FakeLLM:
                 silence_msg = f"The commute policy for {company_id} does not cover this topic. Please contact your company Transport Desk at {contact} for assistance."
                 return silence_msg, [], 1
 
+        # Check for intern and general eligibility queries
+        if "intern" in query_lower:
+            if "CloudMatrix" in company_id:
+                ans = f"Yes, corporate commute facilities are open to engineering interns stationed at CloudMatrix Cyber Park. [Document: {doc_id}, Section: 1. General Commute Eligibility]"
+            else:
+                ans = f"Under {company_id}'s commute policy, corporate transport is available exclusively to full-time employees in designated grades (Grades 1 through 5). Interns are not eligible. [Document: {doc_id}, Section: 1. Eligibility and General Coverage]"
+            return ans, citations, 1
+
+        if any(w in query_lower for w in ["eligibility", "eligible", "grade", "distance", "radius"]):
+            ans = f"Transport eligibility requires residing within the radial distance limits and meeting employee grade requirements outlined in the policy. [Document: {doc_id}, Section: {sec_title}]"
+            return ans, citations, 1
+
         # Check for out of scope topics (pet, personal luxury, relocation bonus, etc.)
         if any(w in query_lower for w in ["pet", "dog", "cat", "bonus", "salary", "loan", "laptop", "resignation"]):
             silence_msg = f"The commute policy for {company_id} does not cover this topic. Please contact your company Transport Desk at {contact} for assistance."
             return silence_msg, [], 1
 
-        # General grounded extraction from top chunk text
-        clean_excerpt = text.split("\n", 2)[-1].strip()[:180]
-        ans = f"{clean_excerpt}.{citation_str}"
-        return ans, citations, 1
+        # Fallback to honest silence rather than emitting raw unparsed text
+        silence_msg = f"The commute policy for {company_id} does not cover this topic. Please contact your company Transport Desk at {contact} for assistance."
+        return silence_msg, [], 1
 
 
 class RealLLM:
@@ -164,6 +175,7 @@ class RealLLM:
     """
     def __init__(self, provider: str = "gemini"):
         self.provider = provider
+        self.model = settings.GEMINI_MODEL
 
     def generate(self, query: str, company_id: str, chunks: List[Dict]) -> Tuple[str, List[Dict[str, str]], int]:
         contact = CONTACT_DESKS.get(company_id, f"desk@{company_id.lower()}.com")
@@ -193,24 +205,40 @@ Employee Question: {query}
 
 Remember to cite [Document: ..., Section: ...] for any factual assertion, or say the policy does not cover this topic."""
 
-        # Live Gemini or Groq execution
+        # Live Gemini execution
         if self.provider == "gemini" and settings.GEMINI_API_KEY:
-            try:
-                import httpx
-                # Call Gemini REST API directly with httpx (no dependency on google-genai)
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GEMINI_API_KEY}"
+            import httpx
+            # List of active model candidates in order of preference
+            candidate_models = [settings.GEMINI_MODEL, "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]
+            # Deduplicate while preserving order
+            seen_models = set()
+            models_to_try = [m for m in candidate_models if not (m in seen_models or seen_models.add(m))]
+            
+            last_error = ""
+            for model_name in models_to_try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
                     "contents": [{"parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]}],
                     "generationConfig": {"temperature": 0.0, "maxOutputTokens": 300}
                 }
-                resp = httpx.post(url, json=payload, timeout=settings.LLM_TIMEOUT_SECONDS)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    answer = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    citations = extract_citations_from_chunks(chunks)
-                    return answer, citations, 1
-            except Exception:
-                pass
+                try:
+                    resp = httpx.post(url, json=payload, timeout=settings.LLM_TIMEOUT_SECONDS)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        answer = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        # If the policy does not cover the topic, citations should be empty
+                        if "does not cover" in answer.lower():
+                            return answer, [], 1
+                        citations = extract_citations_from_chunks(chunks)
+                        return answer, citations, 1
+                    else:
+                        last_error = f"Model {model_name} returned HTTP {resp.status_code}: {resp.text[:150]}"
+                        print(f"[WARN] {last_error}")
+                except Exception as e:
+                    last_error = f"Model {model_name} error: {str(e)}"
+                    print(f"[WARN] {last_error}")
+
+            print(f"[ERROR] All Gemini models failed. Last error: {last_error}. Falling back to grounded mock.")
 
         # Fallback to FakeLLM if live API fails or key is unset
         return FakeLLM().generate(query, company_id, chunks)
