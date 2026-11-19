@@ -15,13 +15,13 @@ The assistant answers employee commute questions strictly grounded in their auth
 
 | Key Metric | Target / Constraint | Measured Result | Compliance Status |
 | :--- | :--- | :--- | :--- |
-| **Pass Rate** | High accuracy across diverse cases | **100.0% (16 / 16 cases)** | ✅ Exceeded |
-| **Cross-Tenant Leakage** | Strict Zero-Tolerance (0%) | **0 Leaks (0.0%)** | ✅ Absolute Zero |
-| **Citation Grounding Rate** | All factual claims cited | **100% of factual answers** | ✅ Fully Grounded |
-| **p95 Latency (SLA)** | **< 3,000 ms (3 seconds)** | **234.91 ms** | ✅ 12.7x faster than SLA |
-| **Median Latency (p50)** | Sub-second | **159.56 ms** | ✅ Ultra-low latency |
-| **Max LLM Calls / Query** | **≤ 2 LLM calls** | **1 call (0 calls on early-exit silence)** | ✅ Within Budget |
-| **Max Cited Chunks / Query** | **≤ 3 chunks** | **3 chunks capped** | ✅ Within Budget |
+| **Pass Rate** | High accuracy across diverse cases | **100.0% (16 / 16 cases)** | Pass (Exceeded) |
+| **Cross-Tenant Leakage** | Strict Zero-Tolerance (0%) | **0 Leaks (0.0%)** | Pass (Absolute Zero) |
+| **Citation Grounding Rate** | All factual claims cited | **100% of factual answers** | Pass (Fully Grounded) |
+| **p95 Latency (SLA)** | **< 3,000 ms (3 seconds)** | **234.91 ms** | Pass (12.7x faster than SLA) |
+| **Median Latency (p50)** | Sub-second | **159.56 ms** | Pass (Ultra-low latency) |
+| **Max LLM Calls / Query** | **≤ 2 LLM calls** | **1 call (0 calls on early-exit silence)** | Pass (Within Budget) |
+| **Max Cited Chunks / Query** | **≤ 3 chunks** | **3 chunks capped** | Pass (Within Budget) |
 
 ---
 
