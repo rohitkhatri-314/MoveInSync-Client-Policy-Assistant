@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
+import shutil
 from pathlib import Path
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -172,6 +173,65 @@ async def get_admin_status():
     if not ingestion_engine:
         ingestion_engine = IngestionEngine()
     return ingestion_engine.get_active_versions()
+
+@app.get("/api/admin/policies", tags=["Admin / Policy Ingestion"])
+async def list_policy_files():
+    """Lists all .md policy files currently stored in the policies/ directory."""
+    policies_dir = settings.BASE_DIR / "policies"
+    policies_dir.mkdir(parents=True, exist_ok=True)
+    files = []
+    for f in sorted(policies_dir.glob("*.md")):
+        files.append({
+            "filename": f.name,
+            "path": str(f),
+            "size_kb": round(f.stat().st_size / 1024, 1),
+            "modified": f.stat().st_mtime,
+        })
+    return {"files": files}
+
+@app.post("/api/admin/upload", tags=["Admin / Policy Ingestion"])
+async def upload_policy_file(
+    file: UploadFile = File(...),
+    company_id: str = Form(...),
+    version: int = Form(...),
+):
+    """
+    Uploads a new policy .md file to the policies/ directory,
+    then atomically ingests it into ChromaDB.
+    """
+    global ingestion_engine, policy_retriever
+
+    if not file.filename.endswith(".md"):
+        raise HTTPException(status_code=400, detail="Only Markdown (.md) files are accepted.")
+
+    policies_dir = settings.BASE_DIR / "policies"
+    policies_dir.mkdir(parents=True, exist_ok=True)
+    dest = policies_dir / file.filename
+
+    try:
+        content_bytes = await file.read()
+        with open(dest, "wb") as out:
+            out.write(content_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File save failed: {e}")
+
+    # Ingest the uploaded file
+    if not ingestion_engine:
+        ingestion_engine = IngestionEngine()
+    try:
+        res = ingestion_engine.ingest_policy_file(str(dest), company_id, version)
+        if policy_retriever:
+            policy_retriever.refresh_bm25_indices()
+        query_cache.invalidate_tenant(company_id)
+        return {
+            "status": "uploaded_and_ingested",
+            "filename": file.filename,
+            "company_id": res["company_id"],
+            "version": res["version"],
+            "chunks_indexed": res["chunks_indexed"],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Ingestion failed: {e}")
 
 # Mount static files for modern web console
 static_path = settings.BASE_DIR / "static"

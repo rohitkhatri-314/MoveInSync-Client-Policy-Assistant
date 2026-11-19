@@ -5,29 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MoveInSync · Policy Administration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
+      --green-800: #166534;
       --green-700: #15803d;
       --green-600: #16a34a;
-      --green-500: #22c55e;
       --green-50:  #f0fdf4;
-      --gray-900:  #111827;
-      --gray-700:  #374151;
-      --gray-600:  #4b5563;
-      --gray-500:  #6b7280;
-      --gray-300:  #d1d5db;
-      --gray-200:  #e5e7eb;
-      --gray-100:  #f3f4f6;
-      --gray-50:   #f9fafb;
-      --white:     #ffffff;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+      --green-border: #bbf7d0;
+      --gray-900: #111827;
+      --gray-800: #1f2937;
+      --gray-700: #374151;
+      --gray-600: #4b5563;
+      --gray-500: #6b7280;
+      --gray-400: #9ca3af;
+      --gray-300: #d1d5db;
+      --gray-200: #e5e7eb;
+      --gray-100: #f3f4f6;
+      --gray-50:  #f9fafb;
+      --white:    #ffffff;
+      --red-600:  #dc2626;
+      --red-50:   #fef2f2;
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-full: 9999px;
+      --sh-sm: 0 1px 2px rgba(0,0,0,.05);
+      --sh-md: 0 4px 14px rgba(0,0,0,.08);
+      --sh-modal: 0 20px 48px -8px rgba(17,24,39,.2);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--gray-50);
@@ -37,431 +41,596 @@
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
     }
+
+    /* ── NAVBAR ── */
     .navbar {
       background: var(--white);
       border-bottom: 1px solid var(--gray-200);
-      padding: 0 32px;
-      height: 64px;
+      height: 68px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0 36px;
+      box-shadow: var(--sh-sm);
     }
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { height: 32px; width: auto; }
+    .brand-divider { width: 1px; height: 20px; background: var(--gray-300); }
+    .brand-label {
+      font-size: 0.82rem; font-weight: 600; color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: 0.06em;
     }
-    .brand-logo {
-      height: 32px;
-      width: auto;
-      object-fit: contain;
-    }
-    .badge-admin {
-      background: var(--gray-100);
-      color: var(--gray-700);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid var(--gray-300);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
     .nav-link {
-      font-size: 0.85rem;
-      color: var(--gray-600);
-      text-decoration: none;
-      font-weight: 500;
+      font-size: 0.85rem; color: var(--gray-600); text-decoration: none;
+      font-weight: 500; padding: 6px 12px; border-radius: var(--r-sm);
+      transition: color .15s, background .15s;
     }
-    .nav-link:hover { color: var(--green-700); }
-    .btn-secondary {
-      background: var(--white);
-      border: 1px solid var(--gray-300);
-      color: var(--gray-700);
-      padding: 7px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
+    .nav-link:hover { color: var(--gray-900); background: var(--gray-100); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--gray-300);
+      color: var(--gray-700); padding: 7px 14px; border-radius: var(--r-sm);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit;
     }
-    .btn-secondary:hover { background: var(--gray-50); }
+    .btn-ghost:hover { background: var(--gray-100); }
 
-    /* Login View */
-    .login-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
+    /* ── LOGIN ── */
+    .login-screen {
+      flex: 1; display: flex; align-items: center;
+      justify-content: center; padding: 32px;
     }
     .login-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      padding: 36px 32px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: var(--shadow-md);
-      text-align: center;
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--r-lg); padding: 40px 36px;
+      width: 100%; max-width: 400px; box-shadow: var(--sh-md); text-align: center;
     }
-    .login-card h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 6px;
+    .login-card img { height: 36px; margin-bottom: 20px; }
+    .login-card h2 { font-size: 1.3rem; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+    .login-card p  { font-size: 0.88rem; color: var(--gray-500); margin-bottom: 28px; }
+    .field { text-align: left; margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300);
+      border-radius: var(--r-sm); font-size: 0.9rem; outline: none; font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
     }
-    .login-card p {
-      font-size: 0.85rem;
-      color: var(--gray-500);
-      margin-bottom: 24px;
-    }
-    .form-group {
-      text-align: left;
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--gray-700);
-      margin-bottom: 6px;
-    }
-    .form-input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      outline: none;
-      font-family: inherit;
-    }
-    .form-input:focus {
-      border-color: var(--green-600);
-      box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
-    }
+    .field input:focus { border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
     .btn-primary {
-      width: 100%;
-      background: var(--green-600);
-      color: var(--white);
-      border: none;
-      padding: 11px;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.2s;
+      width: 100%; background: var(--green-600); color: var(--white);
+      border: none; padding: 11px; border-radius: var(--r-sm);
+      font-size: 0.92rem; font-weight: 600; cursor: pointer; margin-top: 8px;
+      transition: background .2s; font-family: inherit;
     }
     .btn-primary:hover { background: var(--green-700); }
-    .login-error {
-      color: #dc2626;
-      font-size: 0.8rem;
-      margin-top: 12px;
-      display: none;
-    }
+    .login-err { color: var(--red-600); font-size: 0.8rem; margin-top: 12px; display: none; }
 
-    /* Dashboard View */
-    .dashboard-wrapper {
-      display: none;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 36px 24px 60px;
-      width: 100%;
+    /* ── DASHBOARD ── */
+    .dash { display: none; max-width: 980px; margin: 0 auto; padding: 40px 24px 72px; width: 100%; }
+    .page-title { font-size: 1.7rem; font-weight: 800; color: var(--gray-900); letter-spacing: -.5px; margin-bottom: 6px; }
+    .page-desc { font-size: 0.92rem; color: var(--gray-500); margin-bottom: 36px; }
+    .section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--gray-500); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px;
     }
-    .dash-header {
-      margin-bottom: 28px;
-    }
-    .dash-header h1 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--gray-900);
-      margin-bottom: 6px;
-    }
-    .dash-header p {
-      font-size: 0.9rem;
-      color: var(--gray-600);
-    }
-    .status-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+
+    /* ── STATUS CARDS ── */
+    .status-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; margin-bottom: 36px; }
     .status-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--r-md); padding: 18px 20px; box-shadow: var(--sh-sm);
     }
-    .status-company {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 4px;
-    }
-    .status-meta {
-      font-size: 0.8rem;
-      color: var(--gray-500);
-      margin-bottom: 12px;
-    }
-    .status-pill {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      background: var(--green-50);
-      color: var(--green-700);
-      border: 1px solid #bbf7d0;
+    .sc-name { font-size: 0.95rem; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .sc-meta { font-size: 0.78rem; color: var(--gray-500); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+    .sc-pill {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: var(--r-full);
+      background: var(--green-50); color: var(--green-700); border: 1px solid var(--green-border);
     }
 
-    /* Action Card */
-    .action-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 24px;
-    }
-    .action-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 6px;
-    }
-    .action-desc {
-      font-size: 0.88rem;
-      color: var(--gray-600);
+    /* ── CARDS ── */
+    .card {
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--r-lg); padding: 28px; box-shadow: var(--sh-sm);
       margin-bottom: 20px;
-      line-height: 1.5;
     }
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .btn-action {
-      background: var(--green-600);
-      color: var(--white);
-      border: none;
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-action:hover:not(:disabled) { background: var(--green-700); }
-    .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-rollback {
-      background: var(--white);
-      color: var(--gray-700);
-      border: 1px solid var(--gray-300);
-      padding: 10px 18px;
-      border-radius: var(--radius-sm);
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-rollback:hover:not(:disabled) { background: var(--gray-50); }
-    .btn-rollback:disabled { opacity: 0.6; cursor: not-allowed; }
+    .card-title { font-size: 1.0rem; font-weight: 700; color: var(--gray-900); margin-bottom: 6px; }
+    .card-desc { font-size: 0.87rem; color: var(--gray-600); margin-bottom: 22px; line-height: 1.55; }
 
-    /* Audit Log */
-    .log-box {
-      background: #0f172a;
-      color: #f8fafc;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      border-radius: var(--radius-md);
-      padding: 16px;
-      margin-top: 16px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      display: none;
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--gray-300); border-radius: var(--r-md);
+      padding: 32px 24px; text-align: center; cursor: pointer;
+      transition: border-color .2s, background .2s; margin-bottom: 20px;
+      position: relative;
     }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--green-600); background: var(--green-50);
+    }
+    .upload-zone input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-icon { margin: 0 auto 10px; color: var(--gray-400); }
+    .upload-label { font-size: 0.9rem; font-weight: 600; color: var(--gray-700); margin-bottom: 4px; }
+    .upload-hint { font-size: 0.8rem; color: var(--gray-500); }
+    .upload-filename {
+      display: none; margin-top: 10px; font-size: 0.82rem; font-weight: 600;
+      color: var(--green-700); background: var(--green-50); padding: 6px 12px;
+      border-radius: var(--r-sm); display: none;
+    }
+
+    /* ── FORM GRID ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    .form-field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+    .form-field select, .form-field input[type=number] {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--gray-300);
+      border-radius: var(--r-sm); font-size: 0.88rem; outline: none;
+      font-family: inherit; color: var(--gray-900); background: var(--white);
+      transition: border-color .2s, box-shadow .2s; appearance: none;
+    }
+    .form-field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+    .form-field select:focus, .form-field input[type=number]:focus {
+      border-color: var(--green-600); box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+    }
+
+    /* ── BUTTONS ── */
+    .btn-green {
+      background: var(--green-600); color: var(--white); border: none;
+      padding: 10px 20px; border-radius: var(--r-sm); font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; transition: background .2s;
+      font-family: inherit; display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn-green:hover:not(:disabled) { background: var(--green-700); }
+    .btn-green:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-outline {
+      background: var(--white); color: var(--gray-700);
+      border: 1px solid var(--gray-300); padding: 10px 18px; border-radius: var(--r-sm);
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: background .2s; font-family: inherit;
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--gray-50); }
+    .btn-outline:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── POLICY FILE LIST ── */
+    .file-list { margin-bottom: 20px; }
+    .file-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: var(--r-sm);
+      margin-bottom: 8px; cursor: pointer; transition: background .15s, border-color .15s;
+      background: var(--white);
+    }
+    .file-item:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    .file-item.selected { background: var(--green-50); border-color: var(--green-600); }
+    .file-info {}
+    .file-name { font-size: 0.88rem; font-weight: 600; color: var(--gray-800); font-family: 'JetBrains Mono', monospace; }
+    .file-size { font-size: 0.75rem; color: var(--gray-500); margin-top: 2px; }
+    .file-check {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--gray-300); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .file-item.selected .file-check { background: var(--green-600); border-color: var(--green-600); }
+    .file-item.selected .file-check::after {
+      content: ''; width: 5px; height: 9px; border: 2px solid white;
+      border-top: none; border-left: none; transform: rotate(45deg) translateY(-1px);
+      display: block;
+    }
+
+    /* ── LOG ── */
+    .log-box {
+      background: #0f172a; color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      border-radius: var(--r-md); padding: 16px; margin-top: 16px;
+      line-height: 1.65; white-space: pre-wrap; display: none; max-height: 220px; overflow-y: auto;
+    }
+    .log-success { color: #4ade80; }
+    .log-error   { color: #f87171; }
+    .log-info    { color: #94a3b8; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--gray-900); color: var(--white);
+      padding: 12px 20px; border-radius: var(--r-md);
+      font-size: 0.85rem; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      transform: translateY(80px); opacity: 0;
+      transition: transform .3s ease, opacity .3s ease;
+      z-index: 999; display: flex; align-items: center; gap: 8px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.ok  { border-left: 3px solid var(--green-600); }
+    .toast.err { border-left: 3px solid var(--red-600); }
+
+    /* ── SPINNER ── */
+    .spin {
+      width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .7s linear infinite; display: none;
+    }
+    .btn-green.loading .spin { display: block; }
+    .btn-green.loading .btn-label { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <header class="navbar">
-    <div class="nav-brand">
-      <img src="/logo.png" alt="MoveInSync Logo" class="brand-logo">
-      <span class="badge-admin">Administration</span>
-    </div>
-    <div class="nav-actions">
-      <a href="/" class="nav-link">&larr; Back to Policy Assistant</a>
-      <button class="btn-secondary" id="logoutBtn" style="display:none;" onclick="logout()">Sign Out</button>
-    </div>
-  </header>
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="nav-brand">
+    <img src="/logo.png" alt="MoveInSync" class="brand-logo">
+    <div class="brand-divider"></div>
+    <span class="brand-label">Administration</span>
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-link">← Back to Assistant</a>
+    <button class="btn-ghost" id="logoutBtn" style="display:none" onclick="logout()">Sign out</button>
+  </div>
+</header>
 
-  <!-- Login Section -->
-  <div class="login-wrapper" id="loginSection">
-    <div class="login-card">
-      <img src="/logo.png" alt="MoveInSync" style="height: 36px; margin-bottom: 16px;">
-      <h2>Administrator Sign In</h2>
-      <p>Enter administrative credentials to manage corporate commute policies.</p>
-      
-      <form onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" class="form-input" placeholder="admin" required autocomplete="username">
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" class="form-input" placeholder="•••••" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="btn-primary">Sign In</button>
-        <div class="login-error" id="loginError">Invalid credentials. Use admin / admin.</div>
-      </form>
+<!-- LOGIN -->
+<div class="login-screen" id="loginSection">
+  <div class="login-card">
+    <img src="/logo.png" alt="MoveInSync">
+    <h2>Administrator Sign In</h2>
+    <p>Manage and deploy commute policy documents for all tenants.</p>
+    <form onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="usernameInput" placeholder="admin" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="passwordInput" placeholder="••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-primary">Sign In</button>
+      <div class="login-err" id="loginErr">Incorrect credentials. Try admin / admin.</div>
+    </form>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<main class="dash" id="dashSection">
+
+  <div class="page-title">Policy Management</div>
+  <div class="page-desc">Monitor active policies and deploy new versions across all client tenants.</div>
+
+  <!-- Tenant Status -->
+  <div class="section-title">Active Policies</div>
+  <div class="status-row" id="statusRow">
+    <div class="status-card">
+      <div class="sc-name">NexusPay</div>
+      <div class="sc-meta" id="metaNexusPay">Loading…</div>
+      <div class="sc-pill" id="pillNexusPay">Active</div>
+    </div>
+    <div class="status-card">
+      <div class="sc-name">AeroLogix</div>
+      <div class="sc-meta" id="metaAeroLogix">Loading…</div>
+      <div class="sc-pill" id="pillAeroLogix">Active</div>
+    </div>
+    <div class="status-card">
+      <div class="sc-name">CloudMatrix</div>
+      <div class="sc-meta" id="metaCloudMatrix">Loading…</div>
+      <div class="sc-pill" id="pillCloudMatrix">Active</div>
     </div>
   </div>
 
-  <!-- Dashboard Section -->
-  <main class="dashboard-wrapper" id="dashSection">
-    <div class="dash-header">
-      <h1>Policy Version Management</h1>
-      <p>Monitor active company policies and execute zero-downtime atomic version upgrades.</p>
+  <!-- Upload New Policy -->
+  <div class="section-title">Upload New Policy</div>
+  <div class="card">
+    <div class="card-title">Upload & Deploy Policy Document</div>
+    <div class="card-desc">Upload a Markdown (.md) file to add or update a company's commute policy. The file will be saved to the policies directory and immediately indexed into the vector store.</div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".md" onchange="handleFileSelect(this)">
+      <svg class="upload-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <div class="upload-label">Drop your .md file here, or click to browse</div>
+      <div class="upload-hint">Only Markdown policy files are accepted</div>
+    </div>
+    <div class="upload-filename" id="uploadFilename"></div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Assign to Company</label>
+        <select id="uploadCompany">
+          <option value="NexusPay">NexusPay</option>
+          <option value="AeroLogix">AeroLogix</option>
+          <option value="CloudMatrix">CloudMatrix</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Policy Version Number</label>
+        <input type="number" id="uploadVersion" value="1" min="1" max="99">
+      </div>
     </div>
 
-    <!-- Tenant Status Overview -->
-    <div class="status-grid" id="statusGrid">
-      <div class="status-card" id="cardNexusPay">
-        <div class="status-company">NexusPay</div>
-        <div class="status-meta" id="metaNexusPay">Loading policy status...</div>
-        <div class="status-pill" id="pillNexusPay">Active</div>
+    <div class="btn-row">
+      <button class="btn-green" id="btnUpload" onclick="uploadAndIngest()" disabled>
+        <div class="spin"></div>
+        <span class="btn-label">Upload &amp; Deploy</span>
+      </button>
+    </div>
+    <div class="log-box" id="uploadLog"></div>
+  </div>
+
+  <!-- Existing Policies -->
+  <div class="section-title">Existing Policy Files</div>
+  <div class="card">
+    <div class="card-title">Deploy from Existing Files</div>
+    <div class="card-desc">Select any policy file already in the system and deploy it as the active version for a company.</div>
+
+    <div class="file-list" id="fileList">
+      <div style="font-size:.85rem;color:var(--gray-500);padding:12px 0">Loading files…</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Assign to Company</label>
+        <select id="deployCompany">
+          <option value="NexusPay">NexusPay</option>
+          <option value="AeroLogix">AeroLogix</option>
+          <option value="CloudMatrix">CloudMatrix</option>
+        </select>
       </div>
-      <div class="status-card" id="cardAeroLogix">
-        <div class="status-company">AeroLogix</div>
-        <div class="status-meta" id="metaAeroLogix">Loading policy status...</div>
-        <div class="status-pill" id="pillAeroLogix">Active</div>
-      </div>
-      <div class="status-card" id="cardCloudMatrix">
-        <div class="status-company">CloudMatrix</div>
-        <div class="status-meta" id="metaCloudMatrix">Loading policy status...</div>
-        <div class="status-pill" id="pillCloudMatrix">Active</div>
+      <div class="form-field">
+        <label>Policy Version Number</label>
+        <input type="number" id="deployVersion" value="1" min="1" max="99">
       </div>
     </div>
 
-    <!-- NexusPay Live Hot-Swap Card -->
-    <div class="action-card">
-      <div class="action-title">NexusPay Commute Policy Deployment</div>
-      <p class="action-desc">
-        Perform an atomic hot-swap migration of NexusPay's transport policy. In Version 2, the night shift escort cutoff time is extended from 20:00 (8:00 PM) to 20:30 (8:30 PM). Staged chunks are verified in ChromaDB before older chunks are deprecated.
-      </p>
-      <div class="btn-group">
-        <button class="btn-action" id="btnUpgradeV2" onclick="deployPolicy('NexusPay', 'policies/nexuspay_v2.md', 2)">
-          Deploy Policy v2 (Hot-Swap)
-        </button>
-        <button class="btn-rollback" id="btnRollbackV1" onclick="deployPolicy('NexusPay', 'policies/nexuspay_v1.md', 1)">
-          Rollback to Policy v1
-        </button>
-      </div>
-      <div class="log-box" id="auditLog"></div>
+    <div class="btn-row">
+      <button class="btn-green" id="btnDeploy" onclick="deploySelected()" disabled>
+        <div class="spin"></div>
+        <span class="btn-label">Deploy Selected</span>
+      </button>
+      <button class="btn-outline" onclick="loadFiles()">Refresh</button>
     </div>
-  </main>
+    <div class="log-box" id="deployLog"></div>
+  </div>
 
-  <script>
-    function checkAuth() {
-      const isAuth = sessionStorage.getItem("admin_authenticated") === "true";
-      if (isAuth) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("dashSection").style.display = "block";
-        document.getElementById("logoutBtn").style.display = "inline-block";
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── Auth ── */
+  function checkAuth() {
+    const ok = sessionStorage.getItem("admin_auth") === "1";
+    document.getElementById("loginSection").style.display = ok ? "none" : "flex";
+    document.getElementById("dashSection").style.display  = ok ? "block" : "none";
+    document.getElementById("logoutBtn").style.display    = ok ? "inline-block" : "none";
+    if (ok) { loadStatus(); loadFiles(); }
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const u = document.getElementById("usernameInput").value.trim();
+    const p = document.getElementById("passwordInput").value.trim();
+    if (u === "admin" && p === "admin") {
+      sessionStorage.setItem("admin_auth", "1");
+      document.getElementById("loginErr").style.display = "none";
+      checkAuth();
+    } else {
+      document.getElementById("loginErr").style.display = "block";
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem("admin_auth");
+    checkAuth();
+  }
+
+  /* ── Toast ── */
+  function toast(msg, type = "ok") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove("show"), 3400);
+  }
+
+  /* ── Log helpers ── */
+  function logLine(boxId, text, cls = "") {
+    const b = document.getElementById(boxId);
+    b.style.display = "block";
+    const line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+    b.appendChild(line);
+    b.scrollTop = b.scrollHeight;
+  }
+  function clearLog(boxId) {
+    const b = document.getElementById(boxId);
+    b.innerHTML = "";
+    b.style.display = "none";
+  }
+
+  /* ── Status ── */
+  async function loadStatus() {
+    try {
+      const r = await fetch("/api/admin/status");
+      const d = await r.json();
+      ["NexusPay","AeroLogix","CloudMatrix"].forEach(c => {
+        const info = d[c];
+        if (!info) return;
+        document.getElementById("meta" + c).textContent = `v${info.version} · ${info.document_id}`;
+        document.getElementById("pill" + c).textContent = `Active (v${info.version})`;
+      });
+    } catch {}
+  }
+
+  /* ── File Upload ── */
+  let selectedFile = null;
+
+  function handleFileSelect(input) {
+    selectedFile = input.files[0] || null;
+    const lbl = document.getElementById("uploadFilename");
+    const btn = document.getElementById("btnUpload");
+    if (selectedFile) {
+      lbl.textContent = `Selected: ${selectedFile.name}`;
+      lbl.style.display = "block";
+      btn.disabled = false;
+    } else {
+      lbl.style.display = "none";
+      btn.disabled = true;
+    }
+  }
+
+  // Drag and drop
+  const zone = document.getElementById("uploadZone");
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
+    const f = e.dataTransfer.files[0];
+    if (f) {
+      document.getElementById("fileInput").files = e.dataTransfer.files;
+      handleFileSelect({ files: e.dataTransfer.files });
+    }
+  });
+
+  async function uploadAndIngest() {
+    if (!selectedFile) return;
+    const btn = document.getElementById("btnUpload");
+    const company = document.getElementById("uploadCompany").value;
+    const version = parseInt(document.getElementById("uploadVersion").value);
+    clearLog("uploadLog");
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+    logLine("uploadLog", `Uploading ${selectedFile.name} for ${company} v${version}…`, "log-info");
+
+    const form = new FormData();
+    form.append("file", selectedFile);
+    form.append("company_id", company);
+    form.append("version", version);
+
+    try {
+      const r = await fetch("/api/admin/upload", { method: "POST", body: form });
+      const d = await r.json();
+      if (r.ok) {
+        logLine("uploadLog", `Uploaded & ingested — ${d.chunks_indexed} chunks indexed.`, "log-success");
+        toast(`${selectedFile.name} deployed for ${company} (v${version})`);
+        loadStatus();
+        loadFiles();
+        // reset
+        selectedFile = null;
+        document.getElementById("fileInput").value = "";
+        document.getElementById("uploadFilename").style.display = "none";
+      } else {
+        logLine("uploadLog", `Error: ${d.detail || "Upload failed"}`, "log-error");
+        toast("Upload failed", "err");
+      }
+    } catch (err) {
+      logLine("uploadLog", `Network error: ${err}`, "log-error");
+      toast("Network error", "err");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    }
+  }
+
+  /* ── Existing files ── */
+  let selectedFilePath = null;
+
+  async function loadFiles() {
+    const list = document.getElementById("fileList");
+    list.innerHTML = `<div style="font-size:.85rem;color:var(--gray-500);padding:12px 0">Loading…</div>`;
+    try {
+      const r = await fetch("/api/admin/policies");
+      const d = await r.json();
+      list.innerHTML = "";
+      if (!d.files || d.files.length === 0) {
+        list.innerHTML = `<div style="font-size:.85rem;color:var(--gray-500);padding:12px 0">No policy files found.</div>`;
+        return;
+      }
+      d.files.forEach(f => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.dataset.path = f.path;
+        item.innerHTML = `
+          <div class="file-info">
+            <div class="file-name">${f.filename}</div>
+            <div class="file-size">${f.size_kb} KB</div>
+          </div>
+          <div class="file-check"></div>
+        `;
+        item.onclick = () => selectFile(item, f.path, f.filename);
+        list.appendChild(item);
+      });
+    } catch {
+      list.innerHTML = `<div style="font-size:.85rem;color:var(--gray-500);padding:12px 0">Could not load files.</div>`;
+    }
+  }
+
+  function selectFile(el, path, name) {
+    document.querySelectorAll(".file-item").forEach(i => i.classList.remove("selected"));
+    el.classList.add("selected");
+    selectedFilePath = path;
+    document.getElementById("btnDeploy").disabled = false;
+
+    // Auto-detect company and version from filename
+    const m = name.match(/([a-z]+)_v(\d+)/i);
+    if (m) {
+      const compMap = { nexuspay: "NexusPay", aerologix: "AeroLogix", cloudmatrix: "CloudMatrix" };
+      const c = compMap[m[1].toLowerCase()];
+      if (c) document.getElementById("deployCompany").value = c;
+      document.getElementById("deployVersion").value = m[2];
+    }
+  }
+
+  async function deploySelected() {
+    if (!selectedFilePath) return;
+    const btn = document.getElementById("btnDeploy");
+    const company = document.getElementById("deployCompany").value;
+    const version = parseInt(document.getElementById("deployVersion").value);
+    clearLog("deployLog");
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+    logLine("deployLog", `Deploying ${selectedFilePath} for ${company} v${version}…`, "log-info");
+
+    try {
+      const r = await fetch("/api/policies/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company_id: company, file_path: selectedFilePath, version })
+      });
+      const d = await r.json();
+      if (r.ok) {
+        logLine("deployLog", `Success — ${d.chunks_indexed} chunks indexed. Policy is now active.`, "log-success");
+        toast(`Policy deployed for ${company} (v${version})`);
         loadStatus();
       } else {
-        document.getElementById("loginSection").style.display = "flex";
-        document.getElementById("dashSection").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "none";
+        logLine("deployLog", `Error: ${d.detail || "Deployment failed"}`, "log-error");
+        toast("Deployment failed", "err");
       }
+    } catch (err) {
+      logLine("deployLog", `Network error: ${err}`, "log-error");
+      toast("Network error", "err");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("loading");
     }
+  }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById("username").value.trim();
-      const p = document.getElementById("password").value.trim();
-      const err = document.getElementById("loginError");
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") document.querySelectorAll(".file-item").forEach(i => {
+      i.classList.remove("selected");
+      selectedFilePath = null;
+      document.getElementById("btnDeploy").disabled = true;
+    });
+  });
 
-      if (u === "admin" && p === "admin") {
-        sessionStorage.setItem("admin_authenticated", "true");
-        err.style.display = "none";
-        checkAuth();
-      } else {
-        err.style.display = "block";
-      }
-    }
-
-    function logout() {
-      sessionStorage.removeItem("admin_authenticated");
-      checkAuth();
-    }
-
-    async function loadStatus() {
-      try {
-        const res = await fetch("/api/admin/status");
-        if (res.ok) {
-          const data = await res.json();
-          updateCard("NexusPay", data.NexusPay);
-          updateCard("AeroLogix", data.AeroLogix);
-          updateCard("CloudMatrix", data.CloudMatrix);
-        }
-      } catch (err) {
-        console.error("Failed to load status:", err);
-      }
-    }
-
-    function updateCard(company, info) {
-      if (!info) return;
-      const meta = document.getElementById(`meta${company}`);
-      const pill = document.getElementById(`pill${company}`);
-      if (meta) meta.innerText = `Version: v${info.version} · Document: ${info.document_id}`;
-      if (pill) pill.innerText = `Active (v${info.version})`;
-    }
-
-    async function deployPolicy(company, filePath, version) {
-      const btnUp = document.getElementById("btnUpgradeV2");
-      const btnRb = document.getElementById("btnRollbackV1");
-      const log = document.getElementById("auditLog");
-
-      btnUp.disabled = true;
-      btnRb.disabled = true;
-      log.style.display = "block";
-      log.innerText = `[${new Date().toLocaleTimeString()}] Initiating deployment for ${company} (Version ${version})...\nFile: ${filePath}`;
-
-      try {
-        const res = await fetch("/api/policies/ingest", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ company_id: company, file_path: filePath, version: version })
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          log.innerText += `\n[${new Date().toLocaleTimeString()}] ✅ Ingestion successful!\n• Version: v${data.version}\n• Chunks indexed: ${data.chunks_indexed}\n• Status: ${data.status}\n• Invalidation: Query cache purged for ${company}\nAtomic hot-swap complete.`;
-          loadStatus();
-        } else {
-          log.innerText += `\n[${new Date().toLocaleTimeString()}] ❌ Error: ${data.detail || "Deployment failed"}`;
-        }
-      } catch (err) {
-        log.innerText += `\n[${new Date().toLocaleTimeString()}] ❌ Network error: ${err}`;
-      } finally {
-        btnUp.disabled = false;
-        btnRb.disabled = false;
-      }
-    }
-
-    // Run auth check on load
-    checkAuth();
-  </script>
+  checkAuth();
+</script>
 </body>
 </html>
