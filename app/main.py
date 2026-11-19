@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.auth import create_access_token, get_current_tenant
@@ -158,7 +159,22 @@ async def health_check():
         "default_retrieval_mode": settings.DEFAULT_RETRIEVAL_MODE
     }
 
+@app.get("/admin", include_in_schema=False)
+async def admin_page():
+    admin_html = settings.BASE_DIR / "static" / "admin.html"
+    if admin_html.is_file():
+        return FileResponse(admin_html)
+    return FileResponse(settings.BASE_DIR / "static" / "index.html")
+
+@app.get("/api/admin/status", tags=["Admin / Policy Ingestion"])
+async def get_admin_status():
+    global ingestion_engine
+    if not ingestion_engine:
+        ingestion_engine = IngestionEngine()
+    return ingestion_engine.get_active_versions()
+
 # Mount static files for modern web console
 static_path = settings.BASE_DIR / "static"
 if static_path.is_dir():
-    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")
+    app.mount("/static", StaticFiles(directory=str(static_path)), name="static_dir")
+    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static_root")

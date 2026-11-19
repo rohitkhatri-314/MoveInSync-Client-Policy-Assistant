@@ -183,3 +183,34 @@ class IngestionEngine:
             "chunks_indexed": len(chunks),
             "status": "active"
         }
+
+    def get_active_versions(self) -> Dict[str, Dict]:
+        """
+        Returns active policy information for each company.
+        """
+        try:
+            res = self.collection.get(where={"is_active": {"$eq": True}})
+            status = {}
+            for m in res.get("metadatas", []):
+                cid = m.get("company_id")
+                ver = m.get("version", 1)
+                doc = m.get("document_id", "")
+                if cid:
+                    if cid not in status or ver > status[cid]["version"]:
+                        status[cid] = {
+                            "company_id": cid,
+                            "version": ver,
+                            "document_id": doc,
+                        }
+            # Fallback defaults if collection empty
+            for cid in ["NexusPay", "AeroLogix", "CloudMatrix"]:
+                if cid not in status:
+                    status[cid] = {"company_id": cid, "version": 1, "document_id": f"{cid}_Commute_Policy_v1"}
+            return status
+        except Exception:
+            return {
+                "NexusPay": {"company_id": "NexusPay", "version": 1, "document_id": "NexusPay_Commute_Policy_v1"},
+                "AeroLogix": {"company_id": "AeroLogix", "version": 1, "document_id": "AeroLogix_Commute_Policy_v1"},
+                "CloudMatrix": {"company_id": "CloudMatrix", "version": 1, "document_id": "CloudMatrix_Commute_Policy_v1"},
+            }
+

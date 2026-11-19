@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoveInSync · Policy Administration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-700: #15803d;
+      --green-600: #16a34a;
+      --green-500: #22c55e;
+      --green-50:  #f0fdf4;
+      --gray-900:  #111827;
+      --gray-700:  #374151;
+      --gray-600:  #4b5563;
+      --gray-500:  #6b7280;
+      --gray-300:  #d1d5db;
+      --gray-200:  #e5e7eb;
+      --gray-100:  #f3f4f6;
+      --gray-50:   #f9fafb;
+      --white:     #ffffff;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .navbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
+    .badge-admin {
+      background: var(--gray-100);
+      color: var(--gray-700);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--gray-300);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-link {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav-link:hover { color: var(--green-700); }
+    .btn-secondary {
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      color: var(--gray-700);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--gray-50); }
+
+    /* Login View */
+    .login-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    .login-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .login-card p {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-input:focus {
+      border-color: var(--green-600);
+      box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+    }
+    .btn-primary {
+      width: 100%;
+      background: var(--green-600);
+      color: var(--white);
+      border: none;
+      padding: 11px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--green-700); }
+    .login-error {
+      color: #dc2626;
+      font-size: 0.8rem;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* Dashboard View */
+    .dashboard-wrapper {
+      display: none;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
+      width: 100%;
+    }
+    .dash-header {
+      margin-bottom: 28px;
+    }
+    .dash-header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .dash-header p {
+      font-size: 0.9rem;
+      color: var(--gray-600);
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .status-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .status-company {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+    .status-meta {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+    .status-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: var(--green-50);
+      color: var(--green-700);
+      border: 1px solid #bbf7d0;
+    }
+
+    /* Action Card */
+    .action-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+    .action-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .action-desc {
+      font-size: 0.88rem;
+      color: var(--gray-600);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      background: var(--green-600);
+      color: var(--white);
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-action:hover:not(:disabled) { background: var(--green-700); }
+    .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-rollback {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-rollback:hover:not(:disabled) { background: var(--gray-50); }
+    .btn-rollback:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Audit Log */
+    .log-box {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 16px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <img src="/logo.png" alt="MoveInSync Logo" class="brand-logo">
+      <span class="badge-admin">Administration</span>
+    </div>
+    <div class="nav-actions">
+      <a href="/" class="nav-link">&larr; Back to Policy Assistant</a>
+      <button class="btn-secondary" id="logoutBtn" style="display:none;" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Login Section -->
+  <div class="login-wrapper" id="loginSection">
+    <div class="login-card">
+      <img src="/logo.png" alt="MoveInSync" style="height: 36px; margin-bottom: 16px;">
+      <h2>Administrator Sign In</h2>
+      <p>Enter administrative credentials to manage corporate commute policies.</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" class="form-input" placeholder="admin" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="•••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+        <div class="login-error" id="loginError">Invalid credentials. Use admin / admin.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard Section -->
+  <main class="dashboard-wrapper" id="dashSection">
+    <div class="dash-header">
+      <h1>Policy Version Management</h1>
+      <p>Monitor active company policies and execute zero-downtime atomic version upgrades.</p>
+    </div>
+
+    <!-- Tenant Status Overview -->
+    <div class="status-grid" id="statusGrid">
+      <div class="status-card" id="cardNexusPay">
+        <div class="status-company">NexusPay</div>
+        <div class="status-meta" id="metaNexusPay">Loading policy status...</div>
+        <div class="status-pill" id="pillNexusPay">Active</div>
+      </div>
+      <div class="status-card" id="cardAeroLogix">
+        <div class="status-company">AeroLogix</div>
+        <div class="status-meta" id="metaAeroLogix">Loading policy status...</div>
+        <div class="status-pill" id="pillAeroLogix">Active</div>
+      </div>
+      <div class="status-card" id="cardCloudMatrix">
+        <div class="status-company">CloudMatrix</div>
+        <div class="status-meta" id="metaCloudMatrix">Loading policy status...</div>
+        <div class="status-pill" id="pillCloudMatrix">Active</div>
+      </div>
+    </div>
+
+    <!-- NexusPay Live Hot-Swap Card -->
+    <div class="action-card">
+      <div class="action-title">NexusPay Commute Policy Deployment</div>
+      <p class="action-desc">
+        Perform an atomic hot-swap migration of NexusPay's transport policy. In Version 2, the night shift escort cutoff time is extended from 20:00 (8:00 PM) to 20:30 (8:30 PM). Staged chunks are verified in ChromaDB before older chunks are deprecated.
+      </p>
+      <div class="btn-group">
+        <button class="btn-action" id="btnUpgradeV2" onclick="deployPolicy('NexusPay', 'policies/nexuspay_v2.md', 2)">
+          Deploy Policy v2 (Hot-Swap)
+        </button>
+        <button class="btn-rollback" id="btnRollbackV1" onclick="deployPolicy('NexusPay', 'policies/nexuspay_v1.md', 1)">
+          Rollback to Policy v1
+        </button>
+      </div>
+      <div class="log-box" id="auditLog"></div>
+    </div>
+  </main>
+
+  <script>
+    function checkAuth() {
+      const isAuth = sessionStorage.getItem("admin_authenticated") === "true";
+      if (isAuth) {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("dashSection").style.display = "block";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        loadStatus();
+      } else {
+        document.getElementById("loginSection").style.display = "flex";
+        document.getElementById("dashSection").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "none";
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      const err = document.getElementById("loginError");
+
+      if (u === "admin" && p === "admin") {
+        sessionStorage.setItem("admin_authenticated", "true");
+        err.style.display = "none";
+        checkAuth();
+      } else {
+        err.style.display = "block";
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem("admin_authenticated");
+      checkAuth();
+    }
+
+    async function loadStatus() {
+      try {
+        const res = await fetch("/api/admin/status");
+        if (res.ok) {
+          const data = await res.json();
+          updateCard("NexusPay", data.NexusPay);
+          updateCard("AeroLogix", data.AeroLogix);
+          updateCard("CloudMatrix", data.CloudMatrix);
+        }
+      } catch (err) {
+        console.error("Failed to load status:", err);
+      }
+    }
+
+    function updateCard(company, info) {
+      if (!info) return;
+      const meta = document.getElementById(`meta${company}`);
+      const pill = document.getElementById(`pill${company}`);
+      if (meta) meta.innerText = `Version: v${info.version} · Document: ${info.document_id}`;
+      if (pill) pill.innerText = `Active (v${info.version})`;
+    }
+
+    async function deployPolicy(company, filePath, version) {
+      const btnUp = document.getElementById("btnUpgradeV2");
+      const btnRb = document.getElementById("btnRollbackV1");
+      const log = document.getElementById("auditLog");
+
+      btnUp.disabled = true;
+      btnRb.disabled = true;
+      log.style.display = "block";
+      log.innerText = `[${new Date().toLocaleTimeString()}] Initiating deployment for ${company} (Version ${version})...\nFile: ${filePath}`;
+
+      try {
+        const res = await fetch("/api/policies/ingest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_id: company, file_path: filePath, version: version })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          log.innerText += `\n[${new Date().toLocaleTimeString()}] ✅ Ingestion successful!\n• Version: v${data.version}\n• Chunks indexed: ${data.chunks_indexed}\n• Status: ${data.status}\n• Invalidation: Query cache purged for ${company}\nAtomic hot-swap complete.`;
+          loadStatus();
+        } else {
+          log.innerText += `\n[${new Date().toLocaleTimeString()}] ❌ Error: ${data.detail || "Deployment failed"}`;
+        }
+      } catch (err) {
+        log.innerText += `\n[${new Date().toLocaleTimeString()}] ❌ Network error: ${err}`;
+      } finally {
+        btnUp.disabled = false;
+        btnRb.disabled = false;
+      }
+    }
+
+    // Run auth check on load
+    checkAuth();
+  </script>
+</body>
+</html>
