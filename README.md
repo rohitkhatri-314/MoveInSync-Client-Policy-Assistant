@@ -183,7 +183,9 @@ Corporate transport policies govern sensitive physical safety protocols (e.g., w
 │   ├── aerologix_v1.md       # Escort after 21:00 (ALL genders), cutoff 17:00, no weekend
 │   └── cloudmatrix_v1.md     # Escort after 22:00, cutoff 12:00 PM, injection trap
 ├── static/
-│   └── index.html            # Interactive web UI console with live tenant switching
+│   ├── index.html            # Interactive web UI console with clean MoveInSync branding
+│   ├── admin.html            # Dedicated policy administration portal (/admin)
+│   └── logo.png              # MoveInSync official enterprise logo
 ├── tests/
 │   ├── test_auth.py          # JWT claims, expiration, tampering tests
 │   ├── test_isolation.py     # Cross-tenant data leak tests
@@ -202,19 +204,19 @@ Corporate transport policies govern sensitive physical safety protocols (e.g., w
 
 ## 🎥 2-Minute Screen Recording Walkthrough Guide
 
-When recording the demo:
-1. **Start Application:** Run `docker compose up` or `uvicorn app.main:app`.
+When recording your 2-minute demonstration:
+1. **Start Application:** Run `docker compose up --build` or `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
 2. **Open Web UI:** Navigate to `http://localhost:8000/`.
-3. **Demo Contradictory Night Escort Rules:**
-   - Select **NexusPay** & click chip *"🌙 Escort on 9:00 PM drop"* -> Answer cites `[NexusPay_v1, Section: 3. Night Shift]` (mandatory after 20:00).
-   - Switch to **AeroLogix** & click same chip -> Answer cites `[AeroLogix_v1, Section: 3. Night Shift]` (mandatory for **all employees regardless of gender** after 21:00).
-   - Switch to **CloudMatrix** & click same chip -> Answer cites `[CloudMatrix_v1, Section: 3. Late Night]` (mandatory only after 22:00; not required at 9:00 PM).
-4. **Demo Cross-Tenant Security Isolation:**
-   - Logged in as **NexusPay**, click chip *"🛡️ Cross-Company Leak Attack"* (*"What is AeroLogix's night escort rule?"*) -> System cleanly refuses to quote foreign data and directs to the NexusPay Transport Desk.
+3. **Demo Contradictory Night Escort Rules (Tenant Isolation):**
+   - Select **NexusPay** & click chip *"Night escort eligibility"* -> Answer confirms escort is mandatory (after 20:00).
+   - Switch to **CloudMatrix** & ask the exact same question -> Answer confirms escort is NOT required (mandatory only after 22:00).
+4. **Demo Verified Grounding Citations:**
+   - Click the **"Policy Sources"** button in the response footer -> Smooth popup displays verified document name, section, and verbatim text excerpt.
 5. **Demo Policy Silence / Out of Scope:**
-   - Click chip *"❓ Policy Silence / Not Covered"* (*"Can I bring my pet dog in the cab?"*) -> System states policy does not cover this and directs to the Transport Desk (0 LLM calls, latency < 25 ms).
-6. **Demo Prompt Injection Neutralization:**
-   - Click chip *"💉 Prompt Injection Attack"* -> System rejects the override attempt.
-7. **Demo Live Atomic Version Migration:**
-   - Click **"Ingest NexusPay v2 Live"** at the bottom of the screen.
-   - Re-ask the 9:00 PM escort question as NexusPay -> System now cites `NexusPay_v2` with updated 20:30 cutoff!
+   - Ask an out-of-scope question (*"Can I bring my pet dog in the cab?"*) -> System cleanly states the policy does not cover this and directs to the Transport Desk (0 LLM calls, latency < 25 ms).
+6. **Demo Live Atomic Version Migration:**
+   - Open the **Admin Portal** at `http://localhost:8000/admin` (Login: `admin` / `admin`).
+   - Select `nexuspay_v2.md` and click **"Deploy Selected"** (or upload a new `.md` policy file).
+   - Return to `http://localhost:8000/` and query again -> System immediately reflects Policy v2 rules (20:30 cutoff) with zero server restart!
+7. **Automated Verification:**
+   - In terminal, show `pytest -v` (14/14 passing) and `python evaluation/eval_runner.py` (16/16 passing, outputs `eval_results.jsonl`).
