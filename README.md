@@ -9,7 +9,7 @@ An enterprise-grade, multi-tenant commute policy AI assistant engineered for **M
 
 ---
 
-## ⚡ Quick Start (Single Command)
+## Quick Start (Single Command)
 
 ### Option 1: Docker (Recommended)
 Start the entire service and web UI with a single command:
@@ -41,7 +41,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## 🧪 Running Tests & Automated Evaluation
+## Running Tests & Automated Evaluation
 
 ### 1. Run Unit & Integration Tests (100% Offline, Zero-Cost)
 All 14 tests run in ~14 seconds using local embeddings and `FakeLLM`, requiring zero API keys or external network:
@@ -64,7 +64,7 @@ python evaluation/compare_retrieval.py
 
 ---
 
-## 📐 Two Numbers to Design Around
+## Two Numbers to Design Around
 
 The assignment sets two hard operational limits. Here is how our architecture guarantees compliance:
 
@@ -85,7 +85,7 @@ The assignment sets two hard operational limits. Here is how our architecture gu
 
 ---
 
-## 🔒 Multi-Tenant Security Boundary
+## Multi-Tenant Security Boundary
 
 Desk executives serve multiple companies simultaneously. Under pressure, cross-tenant leakage is a major safety and compliance risk.
 
@@ -120,7 +120,7 @@ sequenceDiagram
 
 ---
 
-## 🔄 Atomic Blue/Green Policy Ingestion
+## Atomic Blue/Green Policy Ingestion
 
 When a company updates its transport policy, the transition must be instantaneous and zero-downtime, with zero half-updated states:
 
@@ -131,7 +131,7 @@ When a company updates its transport policy, the transition must be instantaneou
 
 ---
 
-## 🏆 Bonus Feature: Retrieval Engine Benchmark (Dense vs Hybrid)
+## Bonus Feature: Retrieval Engine Benchmark (Dense vs Hybrid)
 
 We implemented **Hybrid Search (Dense Cosine Similarity + Sparse BM25 Keyword Search with Reciprocal Rank Fusion)** and evaluated it side-by-side with baseline Dense search:
 
@@ -146,7 +146,7 @@ $$RRF\_Score(d) = \sum_{m \in \{\text{dense}, \text{bm25}\}} \frac{1}{60 + \text
 
 ---
 
-## 🛡️ Prompt Injection Defense
+## Prompt Injection Defense
 
 Corporate transport policies govern sensitive physical safety protocols (e.g., women employee security escorts on night drops). An adversarial employee or an embedded string in a document might try to trick the model:
 
@@ -159,7 +159,7 @@ Corporate transport policies govern sensitive physical safety protocols (e.g., w
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 ├── app/
@@ -202,7 +202,7 @@ Corporate transport policies govern sensitive physical safety protocols (e.g., w
 
 ---
 
-## 🎥 2-Minute Screen Recording Walkthrough Guide
+## 2-Minute Screen Recording Walkthrough Guide
 
 When recording your 2-minute demonstration:
 1. **Start Application:** Run `docker compose up --build` or `uvicorn app.main:app --host 0.0.0.0 --port 8000`.
