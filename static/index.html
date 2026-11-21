@@ -780,12 +780,12 @@
       const input = document.getElementById("questionInput");
       input.value = text;
       input.focus();
-      document.getElementById("askForm").dispatchEvent(new Event("submit"));
+      handleAsk();
     }
 
     /* Main Query Handler */
     async function handleAsk(e) {
-      e.preventDefault();
+      if (e && e.preventDefault) e.preventDefault();
       const question = document.getElementById("questionInput").value.trim();
       if (!question) return;
 
