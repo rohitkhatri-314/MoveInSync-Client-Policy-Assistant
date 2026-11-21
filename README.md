@@ -43,6 +43,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ## Running Tests & Automated Evaluation
 
+Note: By default, the application and tests run with a built-in deterministic `FakeLLM` requiring zero API keys or external network calls. The fake model is optimized for test suites and offline verification, but may underperform or lack natural conversational nuance on ad-hoc queries. To use real live LLMs (Groq LPU or Google Gemini), copy `.env.example` to `.env` and supply your API key:
+```bash
+cp .env.example .env
+# Edit .env to set LLM_PROVIDER=groq and your GROQ_API_KEY (or Gemini)
+```
+
 ### 1. Run Unit & Integration Tests (100% Offline, Zero-Cost)
 All 14 tests run in ~14 seconds using local embeddings and `FakeLLM`, requiring zero API keys or external network:
 ```bash
